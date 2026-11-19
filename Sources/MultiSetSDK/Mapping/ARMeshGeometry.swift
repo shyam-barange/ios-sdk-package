@@ -6,7 +6,7 @@ Redistribution in source or binary forms must retain this notice.
 */
 
 import ARKit
-import MultiSetSDK
+import MultiSetCore
 
 /// Reads ARKit's reconstruction buffers. Everything is handed over raw: the SDK applies the
 /// anchor transform and the axis conversion itself.

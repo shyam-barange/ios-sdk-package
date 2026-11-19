@@ -8,7 +8,7 @@ Redistribution in source or binary forms must retain this notice.
 import Foundation
 import ARKit
 import UIKit
-import MultiSetSDK
+import MultiSetCore
 
 /// Reads the current ARKit frame into a `CameraFrame`. Passes the raw camera pose and
 /// intrinsics; the SDK applies the portrait correction.

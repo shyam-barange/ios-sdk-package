@@ -8,7 +8,7 @@ Redistribution in source or binary forms must retain this notice.
 import SwiftUI
 import RealityKit
 import ARKit
-import MultiSetSDK
+import MultiSetCore
 
 /// Public AR view component for MultiSet SDK localization
 /// Embed this view in your SwiftUI hierarchy to display AR content with localization

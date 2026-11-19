@@ -6,7 +6,7 @@ Redistribution in source or binary forms must retain this notice.
 */
 
 import ARKit
-import MultiSetSDK
+import MultiSetCore
 
 public enum MappingSupport {
 

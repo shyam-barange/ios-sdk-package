@@ -10,7 +10,7 @@ import RealityKit
 import Metal
 import simd
 import UIKit
-import MultiSetSDK
+import MultiSetCore
 
 /// Renders object tracking meshes as the MultiSet app's animated outline (Unity's `OutlineOnly`).
 ///

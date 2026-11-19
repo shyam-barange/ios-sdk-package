@@ -10,7 +10,7 @@ import ARKit
 import Combine
 import QuartzCore
 import RealityKit
-import MultiSetSDK
+import MultiSetCore
 
 /// Places what the SDK reports into a RealityKit scene: moves the gizmo anchor, parents map
 /// meshes under the map anchor, and keeps one entity per tracked object.

@@ -7,7 +7,7 @@ Redistribution in source or binary forms must retain this notice.
 
 import Foundation
 import ARKit
-import MultiSetSDK
+import MultiSetCore
 
 extension MultiSet {
 

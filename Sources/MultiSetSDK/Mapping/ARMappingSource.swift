@@ -8,7 +8,7 @@ Redistribution in source or binary forms must retain this notice.
 import ARKit
 import RealityKit
 import UIKit
-import MultiSetSDK
+import MultiSetCore
 
 /// The ARKit session a map scan runs on, configured to match the Unity mapper.
 ///

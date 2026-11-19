@@ -8,7 +8,7 @@ Redistribution in source or binary forms must retain this notice.
 import Foundation
 import ARKit
 import RealityKit
-import MultiSetSDK
+import MultiSetCore
 
 /// How the map anchor `MultiSetARView` owns moves to each new fix.
 public enum AlignmentSmoothing: Equatable {

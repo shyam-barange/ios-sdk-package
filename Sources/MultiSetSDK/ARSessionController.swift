@@ -9,7 +9,7 @@ import Foundation
 import ARKit
 import RealityKit
 import UIKit
-import MultiSetSDK
+import MultiSetCore
 
 /// Owns the ARSession delegate and forwards what ARKit reports to the SDK
 final class ARSessionController: NSObject, ARSessionDelegate {

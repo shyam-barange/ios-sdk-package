@@ -12,10 +12,10 @@ This repository is the SDK as a Swift package. The sample app is in
 
 | Path | What it is |
 |---|---|
-| `Package.swift` | The Swift package. Its `MultiSetSDK` binary target is the SDK framework, downloaded from this repo's GitHub Releases; it does not link ARKit or RealityKit |
-| `Sources/MultiSetAR/` | The ARKit + RealityKit adapter, as source: `MultiSetARView`, mesh rendering, the three `.metal` shaders, GPS hints, and `Mapping/` for map creation. The package's `MultiSetAR` target |
+| `Package.swift` | The Swift package. Its `MultiSetCore` binary target is the SDK framework, downloaded from this repo's GitHub Releases; it does not link ARKit or RealityKit |
+| `Sources/MultiSetSDK/` | The ARKit + RealityKit adapter, as source: `MultiSetARView`, mesh rendering, the three `.metal` shaders, GPS hints, and `Mapping/` for map creation. The package's `MultiSetSDK` target, which re-exports `MultiSetCore`, so `import MultiSetSDK` brings in everything |
 
-Each [release](https://github.com/MultiSet-AI/multiset-swift-package/releases) also carries `MultiSetSDK.xcframework.zip`, for a manual install.
+Each [release](https://github.com/MultiSet-AI/multiset-swift-package/releases) also carries `MultiSetCore.xcframework.zip`, for a manual install.
 
 ## Requirements
 
@@ -29,7 +29,7 @@ Each [release](https://github.com/MultiSet-AI/multiset-swift-package/releases) a
 
 [multiset-swift-samples](https://github.com/MultiSet-AI/multiset-swift-samples) is a demo app showing localization, object tracking, map
 creation, a GeoPose map view and every setting. Clone it, add your credentials to
-`MultiSet-iOS-SDK/SDKConfig.swift`, and run it on a device; it adds this package by URL.
+`MultiSet-SDK-Samples/SDKConfig.swift`, and run it on a device; it adds this package by URL.
 
 ## Add the SDK to Your App
 
@@ -38,16 +38,16 @@ creation, a GeoPose map view and every setting. Clone it, add your credentials t
 1. In Xcode, choose **File → Add Package Dependencies…** and enter
    `https://github.com/MultiSet-AI/multiset-swift-package`.
 2. Set **Dependency Rule** to **Up to Next Major Version** from `2.5.0`.
-3. Add the **`MultiSetAR`** product to your app target. It brings the framework with it, so
-   `import MultiSetSDK` and `import MultiSetAR` both work.
+3. Add the **`MultiSetSDK`** product to your app target. It brings the framework with it, and
+   `import MultiSetSDK` is the only import you need.
 
 To take a new release, choose **File → Packages → Update to Latest Package Versions**. The framework
 and the adapter always come from the same version.
 
 | Product | What it gives you | Choose it when |
 |---|---|---|
-| `MultiSetAR` | The framework plus the ARKit + RealityKit adapter: `MultiSetARView`, mesh rendering, GPS hints, map creation | Your app uses ARKit. Almost every app |
-| `MultiSetSDK` | The framework alone | You drive the SDK from another AR runtime (see "Custom AR Runtimes") |
+| `MultiSetSDK` | The framework plus the ARKit + RealityKit adapter: `MultiSetARView`, mesh rendering, GPS hints, map creation. `import MultiSetSDK` | Your app uses ARKit. Almost every app |
+| `MultiSetCore` | The framework alone. `import MultiSetCore` | You drive the SDK from another AR runtime (see "Custom AR Runtimes") |
 
 A package that depends on the SDK declares it in its own `Package.swift`:
 
@@ -57,7 +57,7 @@ dependencies: [
 ],
 targets: [
     .target(name: "MyApp", dependencies: [
-        .product(name: "MultiSetAR", package: "multiset-swift-package"),
+        .product(name: "MultiSetSDK", package: "multiset-swift-package"),
     ]),
 ]
 ```
@@ -66,16 +66,16 @@ targets: [
 
 Without a package manager, or to edit the adapter's source:
 
-1. Download `MultiSetSDK.xcframework.zip` from the
+1. Download `MultiSetCore.xcframework.zip` from the
    [release](https://github.com/MultiSet-AI/multiset-swift-package/releases), unzip it, and drag
-   `MultiSetSDK.xcframework` into your project with **Copy items if needed** checked.
+   `MultiSetCore.xcframework` into your project with **Copy items if needed** checked.
 2. Select your app target → **General → Frameworks, Libraries, and Embedded Content**, and set
-   `MultiSetSDK.xcframework` to **Embed & Sign**.
-3. Drag the `Sources/MultiSetAR` folder from the same release's source code into your project
+   `MultiSetCore.xcframework` to **Embed & Sign**.
+3. Drag the `Sources/MultiSetSDK` folder from the same release's source code into your project
    with **your app target checked**. Check that all three `.metal` files appear under
-   **Build Phases → Compile Sources**. `MultiSetAR/Mapping/` is needed only for map creation.
-4. The adapter is then part of your app's module: leave out the `import MultiSetAR` lines this
-   guide shows.
+   **Build Phases → Compile Sources**. Its `Mapping/` folder is needed only for map creation.
+4. The adapter is then part of your app's module, so there is no `MultiSetSDK` module: write
+   `import MultiSetCore` wherever this guide says `import MultiSetSDK`.
 
 Take the framework and the folder from the same release; an adapter does not build against
 another version's framework.
@@ -182,12 +182,12 @@ A config with credentials and no map or object codes is valid, for an app that o
 
 ### 5. Display the AR View
 
-`MultiSetARView` comes from the `MultiSetAR` module, not from the framework.
+`MultiSetARView` comes from the package's AR adapter, not from the framework; `import MultiSetSDK`
+brings in both.
 
 ```swift
 import SwiftUI
 import MultiSetSDK
-import MultiSetAR
 
 struct MyARView: View {
     var body: some View {
@@ -224,20 +224,21 @@ stays in the former `multiset-ios-sdk` repository, now [multiset-swift-samples](
 is unchanged; what changes is how the SDK gets into your project. Move from the manual install once:
 
 1. Remove `MultiSetSDK.xcframework` from your project and from **Frameworks, Libraries, and
-   Embedded Content**. Left in, it is a second copy of `MultiSetSDK.framework` and the build fails.
+   Embedded Content**. Left in, its `MultiSetSDK` module clashes with the package's and the build
+   fails.
 2. Delete the `MultiSetAR` folder you copied in. Left in, `MultiSetARView` and the `MultiSet`
    extension methods such as `setARSession` are declared twice and become ambiguous. If you changed
    files in it, first compare your copy with the one you started from (in 2.4.0,
    `MultiSet-iOS-SDK/MultiSetAR/` in multiset-swift-samples at commit `573dd99`), then either send us the change or stay on
    the manual install.
-3. Add the package, as in "Add the Swift Package".
-4. Add `import MultiSetAR` to the files that use `MultiSetARView`, `OrientationLock`,
-   `ARMappingSource`, `MappingSupport` or the adapter's `MultiSet` methods; the compiler lists them.
-5. Run on a device and check that the map mesh's radial reveal and the object outlines draw. They
+3. Add the package, as in "Add the Swift Package". Your `import MultiSetSDK` lines stay as they
+   are: the package's `MultiSetSDK` module brings in the framework and the adapter.
+4. Run on a device and check that the map mesh's radial reveal and the object outlines draw. They
    come from the adapter's shaders, which now load from the package.
 
-To stay on the manual install, take `MultiSetSDK.xcframework.zip` from the release and
-`Sources/MultiSetAR/` from its source code; see "Manual install".
+To stay on the manual install, take `MultiSetCore.xcframework.zip` from the release and
+`Sources/MultiSetSDK/` from its source code, and change `import MultiSetSDK` to
+`import MultiSetCore`; see "Manual install".
 
 ## Upgrading from 2.3
 
@@ -466,7 +467,7 @@ if let geo = result.geoPose, let q = geo.quaternion, geo.frameName == "Y-Up-ENU"
 }
 ```
 
-The sample app's GeoPose Map View (`MultiSet-iOS-SDK/Views/Map/` in [multiset-swift-samples](https://github.com/MultiSet-AI/multiset-swift-samples)) plots each fix this way;
+The sample app's GeoPose Map View (`MultiSet-SDK-Samples/Views/Map/` in [multiset-swift-samples](https://github.com/MultiSet-AI/multiset-swift-samples)) plots each fix this way;
 `GeoPoseMath.compassYaw` there also reads the `ENU` frame.
 
 The GeoPose describes the camera at the moment of the fix only. For the device's position and
@@ -515,7 +516,7 @@ To keep content across sessions, save its map pose together with the map code
 authored in a left-handed tool such as Unity go through `MapAlignment.fromLeftHanded(_:)` first.
 Without it the content is mirrored.
 
-`MultiSet.shared.deviceMapPose()`, from the `MultiSetAR` module, gives the device's pose in the map
+`MultiSet.shared.deviceMapPose()`, from the AR adapter, gives the device's pose in the map
 right now: the "you are here" of a floor plan. Its rotation follows
 `LocalizationResult.estimatedRotation`, so in portrait it carries the same 90° correction about the
 camera's Z axis as a query.
@@ -633,7 +634,7 @@ screen.
   alignment between fixes.
 - `LocalizationResult.geoPose?.position.altitude` reads 0 when the server sends no height. The
   alignment does not use that 0: such a fix reports `mapNotGeoreferenced`.
-- On a custom runtime without the `MultiSetAR` adapter, pass the raw camera transform and the
+- On a custom runtime without the AR adapter, pass the raw camera transform and the
   interface orientation to `MapAlignment.mapPose(ofCamera:orientation:)` and
   `GeoAlignment.geolocation(ofCamera:orientation:headingMode:)`.
 
@@ -755,10 +756,10 @@ func onLocalizationStageChanged(_ stage: LocalizationStage, isBackground: Bool) 
 state.
 
 A mesh arrives after the fix that asked for it. `MultiSet.shared.isMapMeshLoading` and
-`isObjectMeshLoading` (from the `MultiSetAR` module) are true from the moment it is fetched until it
+`isObjectMeshLoading` (from the AR adapter) are true from the moment it is fetched until it
 is in the AR scene; the framework's own `isLoadingMapMesh` and `isLoadingObjectMesh` cover the fetch
 alone. A fix on a map whose mesh is already in the scene does not turn them on. The demo app's
-`RunStatusCard`, `FrameCaptureOverlay` and `MeshLoadingBar` (`MultiSet-iOS-SDK/Views/Components/` in the sample app)
+`RunStatusCard`, `FrameCaptureOverlay` and `MeshLoadingBar` (`MultiSet-SDK-Samples/Views/Components/` in the sample app)
 show all of this.
 
 ## False Positive Filtering
@@ -860,7 +861,7 @@ config.mapAliasingRisk = ["YOUR_MAP_CODE": 1.5]
   controllers already run there. From a background task, `await` the call instead, as in
   `await MultiSet.shared.localize()`.
 - **Blocking work.** Network requests and mesh file reads and writes run off the main thread. The
-  `MultiSetAR` mesh renderers also parse GLBs off the main thread, so the AR view keeps rendering
+  adapter's mesh renderers also parse GLBs off the main thread, so the AR view keeps rendering
   while a map or object mesh loads.
 
 ## Session Length and Token Renewal
@@ -957,7 +958,7 @@ print(MultiSet.shared.activeBaseURL)   // what requests actually go to
 
 ## Using Your Own ARView
 
-With the `MultiSetAR` product linked, the SDK attaches to an `ARView` you create yourself,
+With the `MultiSetSDK` product linked, the SDK attaches to an `ARView` you create yourself,
 through the same calls as 1.16.0:
 
 ```swift
@@ -987,7 +988,7 @@ after the device was walked somewhere else it no longer matches the room, and a 
 moved off again. Create the `ARView` with `automaticallyConfigureSession: false` so RealityKit does
 not resume it for you, do not capture `currentFrame` until a frame newer than the trip arrives, and
 return `false` from `sessionShouldAttemptRelocalization(_:)` (the default) so ARKit never fits the
-old frame back on after an interruption. `Sources/MultiSetAR/ARSessionController.swift` and
+old frame back on after an interruption. `Sources/MultiSetSDK/ARSessionController.swift` and
 `ARSessionFrameSource.swift` show all of this.
 
 ## Custom AR Runtimes
@@ -1030,7 +1031,7 @@ long as a frame source is attached.
   - `notifyWorldOriginReset()` when the world frame is replaced.
   - `reportTrackingState(_:)` for every tracking-quality change.
 
-  `Sources/MultiSetAR/ARTrackingSignals.swift` shows the ARKit mapping. A recovery after a break starts
+  `Sources/MultiSetSDK/ARTrackingSignals.swift` shows the ARKit mapping. A recovery after a break starts
   only when `reportTrackingState(.tracking)` follows it. Report a trip to the background as an
   interruption too, and the tracking state again once frames resume.
 - **Optional receivers.** Attach a `MultiSetPoseSink` for accepted poses, a `MultiSetMeshRenderer`
@@ -1046,8 +1047,8 @@ long as a frame source is attached.
 
 The SDK can scan a space, package the capture, keep it on the device as a draft, and upload it to
 your account, where it is built into a VPS map. The capture format and the upload are inside the
-framework; `Sources/MultiSetAR/Mapping/` supplies the ARKit side, and the demo app's
-`MultiSet-iOS-SDK/Views/Mapping/` the screens, which you can reuse.
+framework; `Sources/MultiSetSDK/Mapping/` supplies the ARKit side, and the demo app's
+`MultiSet-SDK-Samples/Views/Mapping/` the screens, which you can reuse.
 
 There are two kinds of scan (`MappingCaptureKind`):
 
@@ -1062,8 +1063,8 @@ move slowly.
 
 ### Setup
 
-1. Link the `MultiSetAR` product; map creation is part of it. The files below that use
-   `OrientationLock`, `ARMappingSource` or `MultiSetMappingARView` need `import MultiSetAR`. A
+1. Link the `MultiSetSDK` product; map creation is part of it, and `import MultiSetSDK` covers
+   `OrientationLock`, `ARMappingSource` and `MultiSetMappingARView` in the files below. A
    manual install needs `Mapping/` and `Mapping/ScanMeshSurface.metal` in your target instead.
 2. Forward the background upload session's wake-up from your app delegate, so an upload that
    finishes while your app is not running is recorded:
@@ -1188,7 +1189,7 @@ transform, the intrinsics and the frame's timestamp) from `acquireRGBFrame()`, a
 camera update to `MultiSet.shared.mapping.reportTrackingSample(_:)` with its tracking state,
 feature-point count and light estimate. Pass every value raw; the SDK does every conversion. A
 frame of any other size is dropped. Call `reportSourceFailure(_:)` when your session fails, and
-`reportSourceInterrupted()` when it is interrupted. `Sources/MultiSetAR/Mapping/ARMappingSource.swift` is
+`reportSourceInterrupted()` when it is interrupted. `Sources/MultiSetSDK/Mapping/ARMappingSource.swift` is
 the reference implementation.
 
 ### API

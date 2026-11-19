@@ -12,7 +12,7 @@ import Metal
 import simd
 import UIKit
 import Combine
-import MultiSetSDK
+import MultiSetCore
 
 /// Internal GLB mesh renderer for RealityKit
 internal class MeshRenderer {

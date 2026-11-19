@@ -8,7 +8,7 @@ Redistribution in source or binary forms must retain this notice.
 import Foundation
 import Combine
 import CoreLocation
-import MultiSetSDK
+import MultiSetCore
 
 /// Supplies GPS coordinates for the `geoHint` request field, from CoreLocation
 public final class CoreLocationGeoHintProvider: NSObject, ObservableObject, CLLocationManagerDelegate {
