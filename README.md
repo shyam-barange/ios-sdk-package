@@ -5,7 +5,8 @@ creation for iOS apps. It localizes the device against pre-mapped 3D environment
 images and aligns AR content to the real world, and it can scan a space and upload it to be built
 into a new map.
 
-**GitHub Repository:** [https://github.com/MultiSet-AI/multiset-ios-sdk.git](https://github.com/MultiSet-AI/multiset-ios-sdk.git)
+This repository is the SDK as a Swift package. The sample app is in
+[multiset-swift-samples](https://github.com/MultiSet-AI/multiset-swift-samples).
 
 ## What's in This Repository
 
@@ -13,10 +14,8 @@ into a new map.
 |---|---|
 | `Package.swift` | The Swift package. Its `MultiSetSDK` binary target is the SDK framework, downloaded from this repo's GitHub Releases; it does not link ARKit or RealityKit |
 | `Sources/MultiSetAR/` | The ARKit + RealityKit adapter, as source: `MultiSetARView`, mesh rendering, the three `.metal` shaders, GPS hints, and `Mapping/` for map creation. The package's `MultiSetAR` target |
-| `Examples/MultiSetDemo/` | Demo app showing localization, object tracking, map creation, a GeoPose map view and every setting. It builds against the package in this repo |
 
-Each [release](https://github.com/MultiSet-AI/multiset-ios-sdk/releases) also carries
-`MultiSetSDK.xcframework.zip`, for a manual install.
+Each [release](https://github.com/MultiSet-AI/multiset-swift-package/releases) also carries `MultiSetSDK.xcframework.zip`, for a manual install.
 
 ## Requirements
 
@@ -26,62 +25,18 @@ Each [release](https://github.com/MultiSet-AI/multiset-ios-sdk/releases) also ca
 - Map creation: any device above for a Posed RGB scan; a LiDAR scan also needs the LiDAR scanner
   (iPhone 12 Pro or a later Pro model, iPad Pro 2020 or later)
 
-## Run the Demo App
+## Sample App
 
-1. Open `Examples/MultiSetDemo/MultiSet-iOS-SDK.xcodeproj`. Xcode resolves the package from this
-   checkout and downloads the SDK framework for it from the matching GitHub Release.
-2. Add your credentials and map code to `Examples/MultiSetDemo/MultiSet-iOS-SDK/SDKConfig.swift`:
-
-   ```swift
-   struct SDKConfig {
-       static let clientId = "YOUR_CLIENT_ID"
-       static let clientSecret = "YOUR_CLIENT_SECRET"
-
-       // Use either mapCode OR mapSetCode (not both)
-       static let mapCode = "YOUR_MAP_CODE"
-       static let mapSetCode = ""
-
-       // Optional, for object tracking (max 10)
-       static let objectCodes: [String] = []
-   }
-   ```
-
-   | Property       | Description              | Required                 |
-   |----------------|--------------------------|--------------------------|
-   | `clientId`     | Your client identifier   | Yes                      |
-   | `clientSecret` | Your secret key          | Yes                      |
-   | `mapCode`      | Single map identifier    | For localization, one of these |
-   | `mapSetCode`   | Map set identifier       | For localization, one of these |
-   | `objectCodes`  | Objects to track         | For object tracking      |
-
-   Map creation needs only the credentials. To fetch tokens from your own server instead, set
-   `tokenServerURL` and leave the credentials as they are; see
-   [SERVER_AUTH_GUIDE.md](SERVER_AUTH_GUIDE.md).
-
-   To obtain credentials, visit [https://developer.multiset.ai/credentials](https://developer.multiset.ai/credentials).
-3. Select your development team under **Signing & Capabilities**, then run on a device.
-
-The gear icon on the landing screen edits the localization and object-tracking settings at runtime.
-The **Mapping** card scans a space into a new map — on a LiDAR device choose **LiDAR** or
-**Non-LiDAR**, on any other device it scans Non-LiDAR — and **Draft Maps** lists scans that have
-not been uploaded yet. The demo's screens call the Posed RGB scan (`.posedRGB`) "Non-LiDAR".
-
-On the AR screens, the small card at the top left shows each run's steps — capturing, uploading,
-waiting on the server, then a tick or a red mark — and a bar at the bottom left shows a map or
-object mesh while it loads. See "Showing a Run's Progress".
-
-The **GeoPose Map View** card opens the AR view under a map that plots each localization's GeoPose
-— the position and the way the camera faced — beside the device's GPS track. It works only with a
-geo-referenced map or MapSet: other maps localize, but their responses carry no GeoPose to plot.
-The map is Apple MapKit, so it needs no key, and it asks for location access to draw the GPS
-track. See "Reading the GeoPose".
+[multiset-swift-samples](https://github.com/MultiSet-AI/multiset-swift-samples) is a demo app showing localization, object tracking, map
+creation, a GeoPose map view and every setting. Clone it, add your credentials to
+`MultiSet-iOS-SDK/SDKConfig.swift`, and run it on a device; it adds this package by URL.
 
 ## Add the SDK to Your App
 
 ### 1. Add the Swift Package
 
 1. In Xcode, choose **File → Add Package Dependencies…** and enter
-   `https://github.com/MultiSet-AI/multiset-ios-sdk`.
+   `https://github.com/MultiSet-AI/multiset-swift-package`.
 2. Set **Dependency Rule** to **Up to Next Major Version** from `2.5.0`.
 3. Add the **`MultiSetAR`** product to your app target. It brings the framework with it, so
    `import MultiSetSDK` and `import MultiSetAR` both work.
@@ -98,11 +53,11 @@ A package that depends on the SDK declares it in its own `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/MultiSet-AI/multiset-ios-sdk", from: "2.5.0"),
+    .package(url: "https://github.com/MultiSet-AI/multiset-swift-package", from: "2.5.0"),
 ],
 targets: [
     .target(name: "MyApp", dependencies: [
-        .product(name: "MultiSetAR", package: "multiset-ios-sdk"),
+        .product(name: "MultiSetAR", package: "multiset-swift-package"),
     ]),
 ]
 ```
@@ -112,7 +67,7 @@ targets: [
 Without a package manager, or to edit the adapter's source:
 
 1. Download `MultiSetSDK.xcframework.zip` from the
-   [release](https://github.com/MultiSet-AI/multiset-ios-sdk/releases), unzip it, and drag
+   [release](https://github.com/MultiSet-AI/multiset-swift-package/releases), unzip it, and drag
    `MultiSetSDK.xcframework` into your project with **Copy items if needed** checked.
 2. Select your app target → **General → Frameworks, Libraries, and Embedded Content**, and set
    `MultiSetSDK.xcframework` to **Embed & Sign**.
@@ -264,15 +219,16 @@ MultiSet.shared.stopLocalization()
 
 ## Upgrading from 2.4
 
-2.5.0 is the first release distributed as a Swift package. The API is unchanged; what changes is
-how the SDK gets into your project. Move from the manual install once:
+2.5.0 is the first release distributed as a Swift package, from this repository. The sample app
+stays in the former `multiset-ios-sdk` repository, now [multiset-swift-samples](https://github.com/MultiSet-AI/multiset-swift-samples). The API
+is unchanged; what changes is how the SDK gets into your project. Move from the manual install once:
 
 1. Remove `MultiSetSDK.xcframework` from your project and from **Frameworks, Libraries, and
    Embedded Content**. Left in, it is a second copy of `MultiSetSDK.framework` and the build fails.
 2. Delete the `MultiSetAR` folder you copied in. Left in, `MultiSetARView` and the `MultiSet`
    extension methods such as `setARSession` are declared twice and become ambiguous. If you changed
    files in it, first compare your copy with the one you started from (in 2.4.0,
-   `MultiSet-iOS-SDK/MultiSetAR/` at commit `573dd99`), then either send us the change or stay on
+   `MultiSet-iOS-SDK/MultiSetAR/` in multiset-swift-samples at commit `573dd99`), then either send us the change or stay on
    the manual install.
 3. Add the package, as in "Add the Swift Package".
 4. Add `import MultiSetAR` to the files that use `MultiSetARView`, `OrientationLock`,
@@ -510,7 +466,7 @@ if let geo = result.geoPose, let q = geo.quaternion, geo.frameName == "Y-Up-ENU"
 }
 ```
 
-The demo app's GeoPose Map View (`Examples/MultiSetDemo/MultiSet-iOS-SDK/Views/Map/`) plots each fix this way;
+The sample app's GeoPose Map View (`MultiSet-iOS-SDK/Views/Map/` in [multiset-swift-samples](https://github.com/MultiSet-AI/multiset-swift-samples)) plots each fix this way;
 `GeoPoseMath.compassYaw` there also reads the `ENU` frame.
 
 The GeoPose describes the camera at the moment of the fix only. For the device's position and
@@ -802,7 +758,7 @@ A mesh arrives after the fix that asked for it. `MultiSet.shared.isMapMeshLoadin
 `isObjectMeshLoading` (from the `MultiSetAR` module) are true from the moment it is fetched until it
 is in the AR scene; the framework's own `isLoadingMapMesh` and `isLoadingObjectMesh` cover the fetch
 alone. A fix on a map whose mesh is already in the scene does not turn them on. The demo app's
-`RunStatusCard`, `FrameCaptureOverlay` and `MeshLoadingBar` (`Examples/MultiSetDemo/MultiSet-iOS-SDK/Views/Components/`)
+`RunStatusCard`, `FrameCaptureOverlay` and `MeshLoadingBar` (`MultiSet-iOS-SDK/Views/Components/` in the sample app)
 show all of this.
 
 ## False Positive Filtering
@@ -1091,7 +1047,7 @@ long as a frame source is attached.
 The SDK can scan a space, package the capture, keep it on the device as a draft, and upload it to
 your account, where it is built into a VPS map. The capture format and the upload are inside the
 framework; `Sources/MultiSetAR/Mapping/` supplies the ARKit side, and the demo app's
-`Examples/MultiSetDemo/MultiSet-iOS-SDK/Views/Mapping/` the screens, which you can reuse.
+`MultiSet-iOS-SDK/Views/Mapping/` the screens, which you can reuse.
 
 There are two kinds of scan (`MappingCaptureKind`):
 

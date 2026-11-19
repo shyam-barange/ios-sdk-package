@@ -3,7 +3,7 @@
 ## 2.5.0
 
 Requires iOS 16.0+ and Xcode 26 or later. No API changes. The SDK is now a Swift package: add
-`https://github.com/MultiSet-AI/multiset-ios-sdk` in Xcode and link the `MultiSetAR` product. Moving
+`https://github.com/MultiSet-AI/multiset-swift-package` in Xcode and link the `MultiSetAR` product. Moving
 from a manual install takes five steps; see "Upgrading from 2.4" in the README.
 
 ### New
@@ -14,8 +14,10 @@ from a manual install takes five steps; see "Upgrading from 2.4" in the README.
   and the framework and the adapter can no longer come from different versions.
 - The framework ships as `MultiSetSDK.xcframework.zip` on each GitHub Release, verified by checksum,
   and is no longer committed to the repo. The same zip serves a manual install.
-- The adapter moved from `MultiSet-iOS-SDK/MultiSetAR/` to `Sources/MultiSetAR/`, and the demo app
-  from the repo root to `Examples/MultiSetDemo/`. The demo builds against the package in the repo.
+- **New home.** The SDK package lives in this repository, multiset-swift-package, with the adapter in
+  `Sources/MultiSetAR/`. The sample app stays in the former multiset-ios-sdk repository, renamed
+  [multiset-swift-samples](https://github.com/MultiSet-AI/multiset-swift-samples), and adds this
+  package by URL.
 
 ### Changed
 
