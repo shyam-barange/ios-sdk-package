@@ -12,7 +12,7 @@ let package = Package(
         .binaryTarget(
             name: "MultiSetCore",
             url: "https://github.com/shyam-barange/ios-sdk-package/releases/download/2.5.0/MultiSetCore.xcframework.zip",
-            checksum: "16ec9970bb0642d1f04b869ba5ce9abf2cc5a7a873e129a98770e5987501fef5"
+            checksum: "62b98007de9341dd67de5789aa2a9711f92ef1b1f841906b111a441d5ae56b5b"
         ),
         .target(
             name: "MultiSetSDK",
