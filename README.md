@@ -988,7 +988,7 @@ after the device was walked somewhere else it no longer matches the room, and a 
 moved off again. Create the `ARView` with `automaticallyConfigureSession: false` so RealityKit does
 not resume it for you, do not capture `currentFrame` until a frame newer than the trip arrives, and
 return `false` from `sessionShouldAttemptRelocalization(_:)` (the default) so ARKit never fits the
-old frame back on after an interruption. `Sources/MultiSetSDK/ARSessionController.swift` and
+old frame back on after an interruption. `Sources/MultiSetSDK/Session/ARSessionController.swift` and
 `ARSessionFrameSource.swift` show all of this.
 
 ## Custom AR Runtimes
@@ -1031,7 +1031,7 @@ long as a frame source is attached.
   - `notifyWorldOriginReset()` when the world frame is replaced.
   - `reportTrackingState(_:)` for every tracking-quality change.
 
-  `Sources/MultiSetSDK/ARTrackingSignals.swift` shows the ARKit mapping. A recovery after a break starts
+  `Sources/MultiSetSDK/Session/ARTrackingSignals.swift` shows the ARKit mapping. A recovery after a break starts
   only when `reportTrackingState(.tracking)` follows it. Report a trip to the background as an
   interruption too, and the tracking state again once frames resume.
 - **Optional receivers.** Attach a `MultiSetPoseSink` for accepted poses, a `MultiSetMeshRenderer`
