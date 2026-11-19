@@ -221,7 +221,8 @@ MultiSet.shared.stopLocalization()
 
 2.5.0 is the first release distributed as a Swift package, from this repository. The sample app
 stays in the former `multiset-ios-sdk` repository, now [multiset-swift-samples](https://github.com/MultiSet-AI/multiset-swift-samples). The API
-is unchanged; what changes is how the SDK gets into your project. Move from the manual install once:
+is unchanged apart from the default query mode (below); what changes is how the SDK gets into your
+project. Move from the manual install once:
 
 1. Remove `MultiSetSDK.xcframework` from your project and from **Frameworks, Libraries, and
    Embedded Content**. Left in, its `MultiSetSDK` module clashes with the package's and the build
@@ -235,6 +236,10 @@ is unchanged; what changes is how the SDK gets into your project. Move from the 
    are: the package's `MultiSetSDK` module brings in the framework and the adapter.
 4. Run on a device and check that the map mesh's radial reveal and the object outlines draw. They
    come from the adapter's shaders, which now load from the package.
+
+**The default query mode is now `.vps2`** (deep search), for single-frame and multi-frame
+localization alike. It recovers a pose in harder or sparsely mapped areas but responds more slowly
+than `.vps1`, the 2.4 default. To keep 2.4's matching, set `config.queryMode = .vps1`.
 
 To stay on the manual install, take `MultiSetCore.xcframework.zip` from the release and
 `Sources/MultiSetSDK/` from its source code, and change `import MultiSetSDK` to
@@ -384,7 +389,7 @@ var config = MultiSetConfig(
 config.localizationMode = .multiFrame       // .singleFrame or .multiFrame
 
 // Matching pipeline, for single-frame and multi-frame queries alike
-config.queryMode = .vps1                    // .vps1 (default) or .vps2
+config.queryMode = .vps2                    // .vps2 (default) or .vps1
 
 // Auto Localization
 config.autoLocalize = true                  // Auto-start when AR begins
@@ -426,14 +431,14 @@ config.imageQuality = 90                    // JPEG quality (50-100)
 Localization can run against either matching pipeline, in both single-frame and multi-frame mode:
 
 ```swift
-config.queryMode = .vps1   // default — standard matching, fastest response
-config.queryMode = .vps2   // deep search — slower, better in hard or sparsely mapped areas
+config.queryMode = .vps2   // default — deep search, slower, better in hard or sparsely mapped areas
+config.queryMode = .vps1   // standard matching — fastest response
 ```
 
 Or change it on an initialized SDK:
 
 ```swift
-MultiSet.shared.setQueryMode(.vps2)
+MultiSet.shared.setQueryMode(.vps1)
 ```
 
 The value is sent with every localization query, single-frame and multi-frame.

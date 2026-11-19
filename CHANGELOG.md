@@ -2,7 +2,8 @@
 
 ## 2.5.0
 
-Requires iOS 16.0+ and Xcode 26 or later. No API changes. The SDK is now a Swift package: add
+Requires iOS 16.0+ and Xcode 26 or later. No breaking API changes, but the default query mode is now `.vps2`;
+see Changed. The SDK is now a Swift package: add
 `https://github.com/MultiSet-AI/multiset-swift-package` in Xcode and link the `MultiSetSDK` product.
 Your `import MultiSetSDK` lines keep working. Moving from a manual install takes four steps; see
 "Upgrading from 2.4" in the README.
@@ -23,6 +24,10 @@ Your `import MultiSetSDK` lines keep working. Moving from a manual install takes
 
 ### Changed
 
+- **`queryMode` defaults to `.vps2`** (deep search) for single-frame and multi-frame localization,
+  instead of `.vps1`. It recovers a pose in harder or sparsely mapped areas and responds more slowly;
+  set `config.queryMode = .vps1` to keep 2.4's matching. `MultiSetConfig.defaultQueryMode` holds the
+  default.
 - **The framework's module is now `MultiSetCore`.** The package's `MultiSetSDK` module is the AR
   adapter and re-exports `MultiSetCore`, so apps that add the package still write only
   `import MultiSetSDK`. A manual install has no `MultiSetSDK` module, because the adapter compiles into
