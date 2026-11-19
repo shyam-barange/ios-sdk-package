@@ -68,5 +68,5 @@ fastlane/test_output
 .swiftpm/
 
 # The SDK binary ships as a GitHub Release asset, not in the repo
-MultiSetSDK.xcframework/
-MultiSetSDK.xcframework.zip
+MultiSetCore.xcframework/
+MultiSetCore.xcframework.zip

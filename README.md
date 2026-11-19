@@ -1,6 +1,6 @@
-# MultiSet iOS SDK
+# MultiSet Swift SDK
 
-The MultiSet iOS SDK provides Visual Positioning System (VPS) localization, object tracking and map
+The MultiSet Swift SDK provides Visual Positioning System (VPS) localization, object tracking and map
 creation for iOS apps. It localizes the device against pre-mapped 3D environments from camera
 images and aligns AR content to the real world, and it can scan a space and upload it to be built
 into a new map.

@@ -5,7 +5,7 @@ where anyone who unpacks it can read the secret. This guide moves the secret to 
 your server gets MultiSet access tokens, your app fetches them from your own API, and the SDK
 sends them on every MultiSet request.
 
-Requires MultiSet iOS SDK 2.2.0 or later.
+Requires MultiSet Swift SDK 2.2.0 or later.
 
 ## How it works
 
