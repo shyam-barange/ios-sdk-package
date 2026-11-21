@@ -245,6 +245,10 @@ To stay on the manual install, take `MultiSetCore.xcframework.zip` from the rele
 `Sources/MultiSetSDK/` from its source code, and change `import MultiSetSDK` to
 `import MultiSetCore`; see "Manual install".
 
+Coming from an earlier version? Follow the steps above for the install, then read each section
+below for its behaviour changes. Their "Replace `MultiSetSDK.xcframework`" steps describe the
+manual install of their time.
+
 ## Upgrading from 2.3
 
 Replace `MultiSetSDK.xcframework` and the `MultiSetAR` folder together: four adapter files changed
@@ -282,7 +286,7 @@ changes are needed.
 ## Upgrading from 2.0
 
 Replace `MultiSetSDK.xcframework` and the `MultiSetAR` folder together. There are no breaking API
-changes, and if you do not create maps no code changes are needed. Two behaviours differ:
+changes, and if you do not create maps no code changes are needed. These behaviours differ:
 
 - **`initialize(config:callback:)` accepts a config with credentials only.** In 2.0 it refused one
   with no `mapCode`, `mapSetCode` or `objectCodes` through `onAuthenticationFailure`. The SDK now
@@ -392,7 +396,7 @@ config.localizationMode = .multiFrame       // .singleFrame or .multiFrame
 config.queryMode = .vps2                    // .vps2 (default) or .vps1
 
 // Auto Localization
-config.autoLocalize = true                  // Auto-start when AR begins
+config.autoLocalize = true                  // Not acted on by the SDK: call localize() yourself
 config.backgroundLocalization = true        // Re-localize at intervals
 config.bgLocalizationDurationSeconds = 30   // Interval in seconds (10-180)
 config.relocalization = true                // Re-localize on tracking loss
@@ -420,7 +424,7 @@ config.geoCoordinatesInResponse = true      // Get geo-coordinates in response
 
 // Mesh & UI
 config.meshVisualization = true             // Show 3D mesh after localization
-config.showAlerts = true                    // Show success/failure alerts
+config.showAlerts = true                    // Not used by the SDK: for your UI to read
 
 // Image Quality
 config.imageQuality = 90                    // JPEG quality (50-100)
@@ -454,6 +458,27 @@ let config = MultiSetConfig(
     mapSetCode: "YOUR_MAP_SET_CODE"
 )
 ```
+
+### Tracking Objects
+
+Object tracking draws an outline on each object scanned into MultiSet. List up to 10 object codes:
+
+```swift
+var config = MultiSetConfig(clientId: "...", clientSecret: "...")
+config.objectCodes = ["YOUR_OBJECT_CODE"]   // up to 10
+MultiSet.shared.initialize(config: config, callback: myDelegate)
+```
+
+Start tracking once `onAuthenticationSuccess()` has fired, and stop it when you are done:
+
+```swift
+MultiSet.shared.startObjectTracking()
+MultiSet.shared.stopObjectTracking()
+```
+
+Each match arrives through `onObjectTrackingSuccess(objectCode:confidence:)`, and a run without one
+through `onObjectTrackingFailure(error:)`. `MultiSetARView` draws the outline, and tracked objects
+stay where they were found when a later localization moves the map.
 
 ### Reading the GeoPose
 
@@ -637,7 +662,7 @@ screen.
 - The AR session must be gravity-aligned (`worldAlignment = .gravity`, which `MultiSetARView` sets).
   With `.gravityAndHeading` ARKit can turn the session as the compass settles, which invalidates the
   alignment between fixes.
-- `LocalizationResult.geoPose?.position.altitude` reads 0 when the server sends no height. The
+- `LocalizationResult.geoPose?.position?.altitude` reads 0 when the server sends no height. The
   alignment does not use that 0: such a fix reports `mapNotGeoreferenced`.
 - On a custom runtime without the AR adapter, pass the raw camera transform and the
   interface orientation to `MapAlignment.mapPose(ofCamera:orientation:)` and
@@ -715,6 +740,7 @@ func onRecoveryPhaseChanged(_ phase: RecoveryPhase, needsRealignment: Bool) {
     case .none: statusLabel.text = nil
     case .waitingForTracking: statusLabel.text = "Waiting for tracking…"
     case .realigning: statusLabel.text = "Re-aligning scene…"
+    @unknown default: statusLabel.text = nil
     }
 }
 ```
@@ -788,8 +814,9 @@ still agree on where the map sits.
   `onLocalizationFailure`.
 
 It is off by default because the gate *discards* responses: in a space whose thresholds it has
-not been calibrated for, it costs you successful localizations. Turn it on once you have watched
-the `Pose consistency ACCEPT` log lines for that space and confirmed the limits fit.
+not been calibrated for, it costs you successful localizations. Calibrate it in a test build first:
+with the check on, every response logs a `MultiSetSDK >> Pose consistency ACCEPT`, `DISPLACE` or
+`REJECT` line with its jump and the limits. Ship it on once those fit the space.
 
 `FalsePositiveInfo` explains the decision. `jumpMeters` and `yawDeltaDeg` say how far off the
 response was, measured against **two independent tolerances**: `thresholdMeters` for distance and
@@ -944,7 +971,7 @@ var config = MultiSetConfig.default(
     clientSecret: "...",
     mapCode: "..."
 )
-config.baseURL = "https://staging-api.multiset.ai"   // no trailing slash needed
+config.baseURL = "https://api.your-environment.example"   // the host MultiSet gives you; no trailing slash needed
 
 MultiSet.shared.initialize(config: config, callback: myDelegate)
 
@@ -983,7 +1010,9 @@ the SDK shows its watermark for as long as a session is attached.
 If your app sets its own `ARSessionDelegate`, forward tracking from it, or interruption and
 relocalization stop reaching the SDK: call `MultiSet.shared.forwardARTrackingState(camera.trackingState)`
 in `session(_:cameraDidChangeTrackingState:)`, and `MultiSet.shared.notifyTrackingInterrupted()` in
-`sessionWasInterrupted(_:)` and `sessionInterruptionEnded(_:)`.
+`sessionWasInterrupted(_:)` and `sessionInterruptionEnded(_:)`. These SDK methods run on the main
+actor and the delegate callbacks are not isolated to it, so make each call inside
+`DispatchQueue.main.async { … }`, as `Sources/MultiSetSDK/Session/ARSessionController.swift` does.
 
 When your app moves to the background, pause the session and call
 `forwardARTrackingState(.notAvailable)`. When it returns, start a fresh world frame
@@ -995,6 +1024,9 @@ not resume it for you, do not capture `currentFrame` until a frame newer than th
 return `false` from `sessionShouldAttemptRelocalization(_:)` (the default) so ARKit never fits the
 old frame back on after an interruption. `Sources/MultiSetSDK/Session/ARSessionController.swift` and
 `ARSessionFrameSource.swift` show all of this.
+
+On this path `MultiSet.shared.resetSession()` cannot restart your session: right after calling it,
+run the session with `[.resetTracking, .removeExistingAnchors]` yourself.
 
 ## Custom AR Runtimes
 
@@ -1070,7 +1102,8 @@ move slowly.
 
 1. Link the `MultiSetSDK` product; map creation is part of it, and `import MultiSetSDK` covers
    `OrientationLock`, `ARMappingSource` and `MultiSetMappingARView` in the files below. A
-   manual install needs `Mapping/` and `Mapping/ScanMeshSurface.metal` in your target instead.
+   manual install needs `Mapping/` in your target instead, with `Mapping/Coverage/ScanMeshSurface.metal`
+    under **Compile Sources**.
 2. Forward the background upload session's wake-up from your app delegate, so an upload that
    finishes while your app is not running is recorded:
 
@@ -1094,8 +1127,11 @@ move slowly.
    }
    ```
 
-4. Call `await MultiSet.shared.mapping.resumeUploads()` when your app becomes active, for example
-   from `sceneDidBecomeActive(_:)`.
+   Set the lock from your scan screen: `OrientationLock.shared.set(.landscape, preferred:
+   .landscapeRight)` when it appears and `OrientationLock.shared.restoreDefault()` when it goes.
+
+4. Call `Task { await MultiSet.shared.mapping.resumeUploads() }` when your app becomes active, for
+   example from `sceneDidBecomeActive(_:)`.
 
 The demo app's `AppDelegate.swift` and `SceneDelegate.swift` do all three. No background mode is
 needed. Scanning works before `initialize(config:callback:)`; uploading waits until the SDK is

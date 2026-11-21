@@ -1,6 +1,6 @@
 # Authenticating Through Your Own Server
 
-The Quick Start gives the SDK your `clientId` and `clientSecret`. Both then ship inside your app,
+The README's "Initialize the SDK" step gives the SDK your `clientId` and `clientSecret`. Both then ship inside your app,
 where anyone who unpacks it can read the secret. This guide moves the secret to your server:
 your server gets MultiSet access tokens, your app fetches them from your own API, and the SDK
 sends them on every MultiSet request.
@@ -146,4 +146,6 @@ The SDK passes a reason with each call:
 
 Set `SDKConfig.tokenServerURL` to an endpoint that answers a GET with `{"token": "<JWT>"}`. The
 demo's `TokenServerProvider` adds `?reason=initial`, `expiring` or `rejected` to the URL, and the
-demo then never uses its `clientId` or `clientSecret`.
+demo then never uses its `clientId` or `clientSecret`. The example server above answers a POST;
+for the demo, serve the same handler with `app.get` and treat `req.query.reason === "rejected"`
+as `forceNew`.

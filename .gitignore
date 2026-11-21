@@ -64,9 +64,9 @@ fastlane/test_output
 # macOS
 .DS_Store
 
-# Swift Package Manager state written when the package is opened in Xcode
+# Xcode writes this when Package.swift is opened directly
 .swiftpm/
 
-# The SDK binary ships as a GitHub Release asset, not in the repo
-MultiSetCore.xcframework/
-MultiSetCore.xcframework.zip
+# The framework ships on GitHub Releases and is never committed
+/MultiSetCore.xcframework/
+/MultiSetCore.xcframework.zip

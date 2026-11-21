@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.5.1
+
+Requires iOS 16.0+ and Xcode 26 or later. No API changes: the framework and the adapter are 2.5.0's,
+apart from `MultiSet.version`, which reads `2.5.1`. Update the package and rebuild.
+
+### New
+
+- **Demo app: Edge Object Tracking.** A new landing card in
+  [multiset-swift-samples](https://github.com/MultiSet-AI/multiset-swift-samples) tracks objects
+  processed in "Edge Based" mode on the MultiSet dashboard frame by frame, including while they
+  move, and draws their outline. Objects processed with auto start are found without lining up a
+  guide outline. It runs on a device only, and it is sample code built on the SDK's public API, not
+  an SDK feature.
+
 ## 2.5.0
 
 Requires iOS 16.0+ and Xcode 26 or later. No breaking API changes, but the default query mode is now `.vps2`;
@@ -86,7 +100,7 @@ folder is unchanged from 2.2.0. No breaking API changes; the new callback is opt
   (`.noFrames`, `.poseNotFound`, `.timeout`, `.serverBusy(statusCode:)` and more), the consecutive
   `attempt` count, and whether and when the SDK will try again (`willRetry`, `retryIn`), so an app
   can tell a run that is retrying from one that is stuck.
-- **Demo app: GeoPose Map View.** A new landing card opens the AR view under an map that
+- **Demo app: GeoPose Map View.** A new landing card opens the AR view under a map that
   plots each fix's GeoPose position and camera heading beside the device's GPS track. It needs a
   geo-referenced map or MapSet.
 - **README:** "Reading the GeoPose" explains the `geoPose` frame and how to get a compass heading
